@@ -58,7 +58,7 @@ textarea{width:100%;font:inherit;font-size:15px;background:var(--ink);color:var(
 <div class="app">
 <section>
 <div class="status" role="status"><span class="dot" id="dot"></span><span id="stat"></span></div>
-<div class="stage"><canvas id="c" width="1280" height="720" aria-label="Animated scene"></canvas></div>
+<div class="stage"><canvas id="c" width="960" height="540" aria-label="Animated scene"></canvas></div>
 <input type="range" id="sl" min="0" max="100" value="100" aria-label="Scrub the animation">
 <div class="chips" id="chips" role="group" aria-label="Scenes"></div>
 <p class="cap" id="cap" aria-live="polite"></p>
@@ -71,7 +71,7 @@ textarea{width:100%;font:inherit;font-size:15px;background:var(--ink);color:var(
 <aside>
 <div class="card"><h2>Your stories</h2><div id="lib"></div><button id="gen" style="width:100%">Generate next story</button><p class="note" id="note"></p></div>
 <div class="card"><h2>Video for Facebook</h2><p class="note" style="margin:0 0 10px">Records the animation with the deep narration and on-screen captions. It takes as long as the story. Use Chrome on a PC or Android, and keep this tab open.</p>
-<button id="mk" style="width:100%">Make video (MP4)</button><div class="prog"><i id="mkbar"></i></div><p class="note" id="mkst"></p>
+<label class="note" for="q">Video quality</label><select id="q" style="width:100%;margin-bottom:10px"><option value="540" selected>Standard, 540p (faster, better for phones)</option><option value="720">HD, 720p (slower)</option></select><button id="mk" style="width:100%">Make video (MP4)</button><div class="prog"><i id="mkbar"></i></div><p class="note" id="mkst"></p>
 <div id="dlbox" hidden><video id="pv" controls playsinline style="width:100%;margin-top:10px;border-radius:8px;background:#000"></video><a id="dl" class="dlb">Download video</a></div>
 <h2 style="margin-top:20px">Facebook caption</h2><textarea id="fbcap" rows="9" aria-label="Facebook caption"></textarea><button class="ghost" id="cpy" style="width:100%">Copy caption</button><p class="note" id="cpst"></p></div>
 <div class="card"><h2>About this story</h2><div id="info"></div></div>
@@ -157,7 +157,7 @@ function voiceStat(){ensureAI();var s=$("voice");s.style.display="";
 if(engine()==="ai")$("vstat").textContent=tts?"Narrator: deep old man (AI voice), ready. Works offline once downloaded.":"Narrator: deep old man (AI voice). The first play downloads about 90 MB, once.";
 else{var ok=window.speechSynthesis&&voices.length,v=ok&&voices[+s.value];$("vstat").textContent=ok?"Narrator: "+(v?v.name:"device voice")+". Device voices often sound higher than the AI voice.":"No device voice found. Choose the AI voice."}}
 if(window.speechSynthesis){var ov=speechSynthesis.onvoiceschanged;speechSynthesis.onvoiceschanged=function(){ov&&ov();voiceStat()}}
-function frame(){var now=performance.now(),t=(now-T0)/1000,el=wait?0:(now-t0)/1000,p;
+var lastF=0;function frame(){var now=performance.now();if(now-lastF<30){requestAnimationFrame(frame);return}lastF=now;var t=(now-T0)/1000,el=wait?0:(now-t0)/1000,p;
 if(play){p=Math.min(1,el/(est*.7));$("sl").value=Math.round(p*100);if(!spoke&&el>est*1.4)advance()}else p=$("sl").value/100;
 X.setTransform(C.width/W,0,0,C.width/W,0,0);draw(stg(),p,t);
 if(rec)subs(S().scenes[si],el/est);else title(S().scenes[si].h,S().ref,play?Math.min(1,el/1.2):1);requestAnimationFrame(frame)}
@@ -204,13 +204,21 @@ function engine(){return $("voice").value.indexOf("ai:")===0?"ai":"dev"}
 function killAI(){wait=false;if(curSrc){try{curSrc.onended=null;curSrc.stop()}catch(e){}curSrc=null}}
 function actx(){if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();dest=AC.createMediaStreamDestination();chain=AC.createGain();var sh=AC.createBiquadFilter();sh.type="lowshelf";sh.frequency.value=220;sh.gain.value=6;var lp=AC.createBiquadFilter();lp.type="lowpass";lp.frequency.value=4200;chain.connect(sh);sh.connect(lp);lp.connect(AC.destination);lp.connect(dest)}if(AC.state==="suspended")AC.resume();return AC}
 function fallbackDev(m){var o=[].slice.call($("voice").options).filter(function(x){return x.value.indexOf("ai:")!==0})[0];if(o)$("voice").value=o.value;if(play&&!rec)stop(m);$("vstat").textContent=m+(o?" Using the device voice.":" Stories will play silently.")}
+var wk=null,wq={},wid=0;
 function loadAI(){if(ttsP)return ttsP;if(window.__FAKE){tts={};return ttsP=Promise.resolve(tts)}
 $("vstat").textContent="Downloading the deep voice, one time, about 90 MB. Please wait.";
-ttsP=import("https://cdn.jsdelivr.net/npm/kokoro-js@1.2.0/+esm").then(function(m){return m.KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX",{dtype:"q8",device:"wasm",progress_callback:function(p){if(p&&p.status==="progress")$("vstat").textContent="Downloading the deep voice: "+Math.round(p.progress)+"%"}})}).then(function(t){tts=t;voiceStat();return t});
-ttsP.catch(function(){ttsP=null;fallbackDev("The deep AI voice could not load. It needs an internet connection the first time.")});return ttsP}
+ttsP=new Promise(function(res,rej){var code='import {KokoroTTS} from "https://cdn.jsdelivr.net/npm/kokoro-js@1.2.0/+esm";let t;self.onmessage=async function(e){var d=e.data;try{if(d.type==="init"){t=await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX",{dtype:"q8",device:"wasm",progress_callback:function(p){self.postMessage({type:"prog",p:p})}});self.postMessage({type:"ready"})}else{var a=await t.generate(d.text,{voice:d.voice,speed:d.speed});self.postMessage({type:"audio",id:d.id,audio:a.audio,sr:a.sampling_rate},[a.audio.buffer])}}catch(err){self.postMessage({type:"err",id:d.id,msg:String(err)})}};';
+try{wk=new Worker(URL.createObjectURL(new Blob([code],{type:"text/javascript"})),{type:"module"})}catch(e){rej(e);return}
+wk.onerror=function(){rej(new Error("worker"))};
+wk.onmessage=function(e){var d=e.data,q;if(d.type==="prog"){if(d.p&&d.p.status==="progress")$("vstat").textContent="Downloading the deep voice: "+Math.round(d.p.progress)+"%"}
+else if(d.type==="ready"){tts=true;voiceStat();res(true)}
+else if(d.type==="audio"){q=wq[d.id];delete wq[d.id];if(q)q.res(d)}
+else if(d.type==="err"){if(d.id!=null){q=wq[d.id];delete wq[d.id];if(q)q.rej(new Error(d.msg))}else rej(new Error(d.msg))}};
+wk.postMessage({type:"init"})});
+ttsP.catch(function(){ttsP=null;wk=null;fallbackDev("The deep AI voice could not load. It needs an internet connection the first time.")});return ttsP}
 function aiBuf(i){var k=ci+":"+i+":"+aiVoice();if(cache[k])return Promise.resolve(cache[k]);
-return loadAI().then(function(t){if(window.__FAKE){var b=actx().createBuffer(1,36000,24000),d=b.getChannelData(0);for(var j=0;j<d.length;j++)d[j]=.2*Math.sin(j/20);return b}
-return t.generate(S().scenes[i].t,{voice:aiVoice(),speed:.92}).then(function(a){var b=actx().createBuffer(1,a.audio.length,a.sampling_rate);b.copyToChannel(a.audio,0);return b})}).then(function(b){cache[k]=b;return b})}
+return loadAI().then(function(){if(window.__FAKE){var b=actx().createBuffer(1,36000,24000),d=b.getChannelData(0);for(var j=0;j<d.length;j++)d[j]=.2*Math.sin(j/20);return b}
+return new Promise(function(res,rej){var id=++wid;wq[id]={res:res,rej:rej};wk.postMessage({type:"gen",id:id,text:S().scenes[i].t,voice:aiVoice(),speed:.92})}).then(function(a){var b=actx().createBuffer(1,a.audio.length,a.sr);b.copyToChannel(a.audio,0);return b})}).then(function(b){cache[k]=b;return b})}
 function playBuf(b,cb){var s=actx().createBufferSource();s.buffer=b;s.playbackRate.value=RATE;s.connect(chain);s.onended=cb;curSrc=s;s.start();return b.duration/RATE}
 function aiScene(i){actx();var my=++tok;spoke=true;wait=true;$("vstat").textContent="Preparing narration for scene "+(i+1)+"...";
 aiBuf(i).then(function(b){if(my!==tok||!play)return;voiceStat();wait=false;t0=performance.now();est=playBuf(b,function(){if(play&&my===tok)setTimeout(function(){if(play&&my===tok)advance()},500)});if(i+1<S().scenes.length)aiBuf(i+1).catch(function(){})}).catch(function(){})}
@@ -226,8 +234,8 @@ function pickMime(){var l=["video/mp4;codecs=avc1.42E01E,mp4a.40.2","video/mp4",
 function mkMsg(m){$("mkst").textContent=m}
 async function makeVideo(){
 if(rec)return;if(!window.MediaRecorder||!C.captureStream){mkMsg("This browser cannot record video. Use Chrome on a PC or Android.");return}
-stop();rec=true;$("mk").disabled=true;$("dlbox").hidden=true;var s=S(),n=s.scenes.length,mime=pickMime(),mr;
-try{await loadAI();var bs=[];for(var i=0;i<n;i++){mkMsg("Preparing narration "+(i+1)+" of "+n+"...");bs.push(await aiBuf(i));$("mkbar").style.width=((i+1)/n*50)+"%"}
+stop();rec=true;var qh=+$("q").value;C.width=Math.round(qh*16/9);C.height=qh;$("mk").disabled=true;$("dlbox").hidden=true;var s=S(),n=s.scenes.length,mime=pickMime(),mr;
+try{await loadAI();var bs=[];for(var i=0;i<n;i++){mkMsg("Preparing narration "+(i+1)+" of "+n+". This can take a few minutes on a phone. You can wait while it works.");bs.push(await aiBuf(i));$("mkbar").style.width=((i+1)/n*50)+"%"}
 var ac=actx();await ac.resume();setScene(0);
 var st2=new MediaStream(C.captureStream(30).getVideoTracks().concat(dest.stream.getAudioTracks())),ch=[];
 mr=new MediaRecorder(st2,mime?{mimeType:mime,videoBitsPerSecond:5e6,audioBitsPerSecond:128e3}:{});
@@ -241,7 +249,7 @@ $("dl").href=u;$("dl").download=nm;$("pv").src=u;$("dlbox").hidden=false;$("mkba
 mkMsg(ext==="mp4"?"Done. Your MP4 is ready.":"Done, but this browser made a WebM file, not MP4. Use Chrome on a PC or Android for MP4, or convert it free at cloudconvert.com.");
 log("Made video: "+nm+" ("+Math.round(blob.size/1e5)/10+" MB)")
 }catch(e){mkMsg("Could not make the video: "+(e&&e.message||e));try{mr&&mr.state!=="inactive"&&mr.stop()}catch(x){}}
-rec=false;play=false;killAI();$("mk").disabled=false;$("sl").value=100;refreshStat()}
+rec=false;play=false;killAI();C.width=960;C.height=540;$("mk").disabled=false;$("sl").value=100;refreshStat()}
 $("mk").onclick=makeVideo;
 function fbUpdate(){var s=S(),bk=s.ref.replace(/\s*\d+$/,"").replace(/\s/g,""),hook=(s.scenes[0].t.match(/[^.!?]+[.!?]/)||[""])[0].trim();
 $("fbcap").value=s.title+" ("+s.ref+")\n\n"+hook+"\n\nOne Bible story a day, from Genesis to Revelation. Share it with someone who needs to hear it today.\n\n#BibleStories #"+bk+" #OneStoryADay #Faith #Scripture"}
