@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#07080d"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="One Story"><link rel="apple-touch-icon" href="icon-192.png"><title>One Story a Day: The Bible, Genesis to Revelation</title>
+<style>
+:root{color-scheme:dark;--ink:#07080d;--card:#10131d;--line:#262b3d;--text:#ebe2cc;--dim:#9a9484;--gold:#dcab4f;--grn:#6fcf97;--blu:#8fb0ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--text);font:17px/1.6 Georgia,"Times New Roman",serif}
+main{max-width:1180px;margin:0 auto;padding:18px 16px 56px}
+h1{font-size:26px;font-weight:400;margin:4px 0 2px}
+h2{font-size:19px;font-weight:400;margin:0 0 12px}
+.top{display:flex;flex-wrap:wrap;gap:12px 32px;justify-content:space-between;align-items:flex-end;margin-bottom:16px}
+.sub{color:var(--dim);margin:0;font-size:15px}
+.sum{min-width:240px;flex:0 1 340px;font-size:14px;color:var(--dim)}
+.prog{height:4px;background:var(--line);border-radius:2px;margin-top:6px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--gold);width:0;transition:width .4s}
+.app{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
+@media(min-width:920px){.app{grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start}main{padding-top:28px}.cap{font-size:20px!important}}
+.status{display:flex;gap:10px;align-items:center;margin-bottom:10px;font-size:15px;min-height:28px}
+.dot{width:10px;height:10px;border-radius:50%;background:#6b6f80;flex:none}
+.dot.on{background:var(--grn)}.dot.warn{background:var(--gold)}
+.stage{border-radius:10px;overflow:hidden;background:#000;border:1px solid var(--line)}
+canvas{display:block;width:100%;aspect-ratio:16/9}
+input[type=range]{width:100%;margin:10px 0 0;accent-color:var(--gold)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+.cap{margin:6px 0 0;min-height:8em;font-size:18px;line-height:1.65;font-style:italic}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.bar .grow{flex:1;min-width:140px}
+button,select{font:inherit;font-size:16px;color:var(--ink);background:var(--gold);border:0;border-radius:8px;padding:12px 18px;min-height:46px;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid #fff;outline-offset:2px}
+button.ghost,.chip,.row{background:var(--card);color:var(--text);border:1px solid var(--line)}
+.chip{min-width:46px;flex:none;padding:10px 0}
+.chip.on,.row.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;margin-bottom:8px}
+.bd{font-size:13px;padding:1px 10px;border-radius:99px;border:1px solid currentColor;flex:none;color:var(--gold)}
+.bd.prog{color:var(--blu)}.bd.done{color:var(--grn)}
+.row.on .bd{color:var(--ink)}
+button:disabled{opacity:.4;cursor:default}
+select{background:var(--card);color:var(--text);border:1px solid var(--line);min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+details{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+summary{cursor:pointer;min-height:28px}
+details p{margin:12px 0 0}
+details b{font-weight:400;color:var(--gold)}
+.note{margin:8px 0 0;color:var(--dim);font-size:14px}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:15px}
+dt{color:var(--dim)}dd{margin:0;text-align:right}
+ul{list-style:none;margin:0 0 12px;padding:0;max-height:260px;overflow:auto;font-size:14px}
+li{padding:7px 0;border-bottom:1px solid var(--line)}
+li span{display:block;color:var(--dim);font-size:12px}
+textarea{width:100%;font:inherit;font-size:15px;background:var(--ink);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px;resize:vertical}
+.dlb{display:block;text-align:center;margin-top:10px;padding:12px;border-radius:8px;background:var(--gold);color:var(--ink);text-decoration:none}
+.kb{display:none}@media(hover:hover){.kb{display:block}}
+</style></head><body><main>
+<header class="top"><div><h1>One Story a Day</h1><p class="sub">The Bible from Genesis to Revelation, narrated and animated.</p></div>
+<div class="sum"><button class="ghost" id="inst" hidden style="margin-bottom:8px">Install app</button><p class="note" id="ios" hidden>To install on iPhone: tap Share, then Add to Home Screen.</p><span id="sumtxt"></span><div class="prog"><i id="sumbar"></i></div></div></header>
+<div class="app">
+<section>
+<div class="status" role="status"><span class="dot" id="dot"></span><span id="stat"></span></div>
+<div class="stage"><canvas id="c" width="1280" height="720" aria-label="Animated scene"></canvas></div>
+<input type="range" id="sl" min="0" max="100" value="100" aria-label="Scrub the animation">
+<div class="chips" id="chips" role="group" aria-label="Scenes"></div>
+<p class="cap" id="cap" aria-live="polite"></p>
+<div class="bar"><button class="ghost" id="prev">Back</button><button id="play">Play story</button><button class="ghost" id="nx">Next scene</button></div>
+<div class="bar"><select id="voice" class="grow" aria-label="Narrator voice"></select><select id="rate" aria-label="Narration speed"><option value=".7">Slower</option><option value=".8" selected>Default</option><option value=".95">Faster</option></select></div>
+<p class="note" id="vstat"></p>
+<p class="note kb">Keyboard: Space plays or pauses. Left and right arrows change scene.</p>
+<details><summary>Read the full story</summary><div id="ft"></div></details>
+</section>
+<aside>
+<div class="card"><h2>Your stories</h2><div id="lib"></div><button id="gen" style="width:100%">Generate next story</button><p class="note" id="note"></p></div>
+<div class="card"><h2>Video for Facebook</h2><p class="note" style="margin:0 0 10px">Records the animation with the deep narration and on-screen captions. It takes as long as the story. Use Chrome on a PC or Android, and keep this tab open.</p>
+<button id="mk" style="width:100%">Make video (MP4)</button><div class="prog"><i id="mkbar"></i></div><p class="note" id="mkst"></p>
+<div id="dlbox" hidden><video id="pv" controls playsinline style="width:100%;margin-top:10px;border-radius:8px;background:#000"></video><a id="dl" class="dlb">Download video</a></div>
+<h2 style="margin-top:20px">Facebook caption</h2><textarea id="fbcap" rows="9" aria-label="Facebook caption"></textarea><button class="ghost" id="cpy" style="width:100%">Copy caption</button><p class="note" id="cpst"></p></div>
+<div class="card"><h2>About this story</h2><div id="info"></div></div>
+<div class="card"><h2>Activity</h2><ul id="log"></ul><button class="ghost" id="clr">Clear activity</button></div>
+</aside></div></main>
+<script>
+var STORIES=[{ref:"Genesis 1",title:"The Beginning",scenes:[
+{h:"In the beginning",t:`In the beginning, before time had a name, there was only darkness, and a deep silence over the waters. And the Spirit of God moved over the face of the deep, waiting.`},
+{h:"The first day",t:`Then God spoke. Let there be light. And light broke through the dark, like a morning the world had never seen. God saw that the light was good. He called the light day, and the darkness He called night. That was the first day.`},
+{h:"The second day",t:`On the second day, God made a great open sky, and parted the waters above from the waters below. Clouds drifted across the heavens, and the world began to breathe.`},
+{h:"The third day",t:`On the third day, God gathered the waters together, and dry land appeared. Then the earth grew green with grass, and with trees bearing fruit, each after its own kind. And God saw that it was good.`},
+{h:"The fourth day",t:`On the fourth day, God set lights in the heavens. A great sun to rule the day, a gentle moon to guard the night, and stars beyond counting, to mark the seasons and the years.`},
+{h:"The fifth day",t:`On the fifth day, the waters filled with living creatures, and birds took wing across the open sky. God blessed them, and said, be fruitful, and fill the seas and the earth.`},
+{h:"The sixth day",t:`On the sixth day, the earth brought forth cattle, and every creeping thing, and every beast. And then God formed man in His own image, and breathed into him the breath of life. God looked on all that He had made, and behold, it was very good.`},
+{h:"The seventh day",t:`On the seventh day, the work was finished. God rested, and blessed that day, and made it holy. So the heavens and the earth were completed. This was the beginning. Generate the next story when you are ready.`}
+]},{ref:"Genesis 2",title:"The Garden of Eden",scenes:[
+{k:6,h:"The dust and the breath",t:`The earth was still, and no rain had yet fallen. Then the Lord God formed man from the dust of the ground, and breathed into his nostrils the breath of life, and man became a living soul.`},
+{k:3,h:"The garden in Eden",t:`And God planted a garden eastward, in Eden, and there He placed the man. Out of the ground grew every tree that was pleasant to the sight and good for food. A river flowed out of Eden, to water the garden.`},
+{k:4,h:"Keeping the garden",t:`God set the man in the garden, to tend it and keep it. He said, you may freely eat from every tree. But of the tree of the knowledge of good and evil, you shall not eat, for in the day you eat of it, you shall surely die.`},
+{k:6,h:"Naming the animals",t:`God brought every beast and every bird to the man, to see what he would call them. And whatever the man called each living creature, that was its name. Yet among them all, there was no companion suited to him.`},
+{k:5,h:"A companion",t:`Then God said, it is not good for man to be alone. And He caused a deep sleep to fall upon the man, and from his side He formed a woman, and brought her to him.`},
+{k:7,h:"One flesh",t:`And the man said, this at last is bone of my bones, and flesh of my flesh. Therefore a man leaves his father and mother, and holds fast to his wife, and the two become one. Generate the next story when you are ready.`}
+]}];
+var $=function(i){return document.getElementById(i)},C=$("c"),X=C.getContext("2d"),W=960,H=540,KEY="bs_state_v2";
+var mem={gen:1,st:{},log:[]};try{var m0=JSON.parse(localStorage.getItem(KEY));if(m0&&m0.gen){mem=m0;mem.st=mem.st||{};mem.log=mem.log||[]}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(mem))}catch(e){}}
+var voices=[];
+function loadVoices(){
+var all=(window.speechSynthesis?speechSynthesis.getVoices():[]).filter(function(v){return /^en/i.test(v.lang)});
+if(!all.length)return;voices=all;
+var good=/daniel|alex|fred|david|george|james|arthur|male|guy|ryan|mark|aaron|gordon|oliver/i;
+var sel=$("voice"),pick=-1;sel.innerHTML="";
+all.forEach(function(v,i){var o=document.createElement("option");o.value=i;o.textContent=v.name+" ("+v.lang+")";sel.appendChild(o);if(pick<0&&good.test(v.name)&&!/female|samantha|karen|victoria|zira|siri/i.test(v.name))pick=i});
+sel.value=pick<0?0:pick}
+if(window.speechSynthesis){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+else $("voice").style.display="none";
+function sm(a,b,x){x=Math.min(1,Math.max(0,(x-a)/(b-a)));return x*x*(3-2*x)}
+function mix(a,b,t){return a.map(function(v,i){return Math.round(v+(b[i]-v)*t)})}
+function rgb(a,al){return"rgba("+a[0]+","+a[1]+","+a[2]+","+(al==null?1:al)+")"}
+function R(stage,s,p){return s>stage?1:s===stage?sm(0,1,p):0}
+function gy(x){var b=250-45*Math.exp(-Math.pow((x-640)/170,2));return 560+(b-560)*sm(300,460,x)}
+function draw(s,p,t){
+var L=R(1,s,p),Sky=R(2,s,p),Land=R(3,s,p),Sun=R(4,s,p),Br=R(5,s,p),An=R(6,s,p),Rest=R(7,s,p);
+var top=mix([5,6,12],[28,52,98],Sky*.9+L*.1),bot=mix([5,6,12],[120,92,70],L*.6+Sun*.2);
+if(Rest>0){top=mix(top,[52,36,64],Rest);bot=mix(bot,[210,130,60],Rest)}
+var g=X.createLinearGradient(0,0,0,H);g.addColorStop(0,rgb(top));g.addColorStop(1,rgb(bot));X.fillStyle=g;X.fillRect(0,0,W,H);
+if(L>0){X.fillStyle="rgba(255,236,170,"+.25*L+")";X.beginPath();X.moveTo(400,0);X.lineTo(560,0);X.lineTo(900,H);X.lineTo(60,H);X.fill();
+X.fillStyle="rgba(255,244,200,"+.3*L+")";X.beginPath();X.moveTo(450,0);X.lineTo(510,0);X.lineTo(700,H);X.lineTo(260,H);X.fill();
+var rg=X.createRadialGradient(480,0,0,480,0,420*L);rg.addColorStop(0,"rgba(255,245,210,"+.85*L+")");rg.addColorStop(1,"rgba(255,245,210,0)");X.fillStyle=rg;X.fillRect(0,0,W,H)}
+if(Sun>0){for(var i=0;i<70;i++){var sx=(i*137.5)%W,sy=(i*71.3)%260,tw=.5+.5*Math.sin(t*2+i);X.fillStyle="rgba(255,255,255,"+(.15+.6*tw)*Sun*(1-Rest*.8)+")";X.fillRect(sx,sy,i%7?1.5:2.5,i%7?1.5:2.5)}
+var sy2=130+Rest*110;X.fillStyle="rgba(255,214,120,"+.2*Sun+")";X.beginPath();X.arc(190,sy2+(1-Sun)*80,70,0,7);X.fill();X.fillStyle="rgb(255,226,150)";X.globalAlpha=Sun;X.beginPath();X.arc(190,sy2+(1-Sun)*80,34,0,7);X.fill();
+X.fillStyle="#e8ecff";X.beginPath();X.arc(780,90+(1-Sun)*60,22,0,7);X.fill();X.fillStyle=rgb(top);X.beginPath();X.arc(790,84+(1-Sun)*60,19,0,7);X.fill();X.globalAlpha=1}
+if(Sky>0){X.fillStyle="rgba(8,10,20,"+.55*Sky+")";for(var k=0;k<4;k++){var cx=((t*(8+k*3)+k*260)%1200)-120,cy=70+k*38;[0,34,-30].forEach(function(o,j){X.beginPath();X.ellipse(cx+o*1.6,cy+(j?6:0),60-j*10,16,0,0,7);X.fill()})}}
+var wy=250;X.fillStyle="#04060c";X.fillRect(0,wy,W,H-wy);X.strokeStyle="rgba(200,220,255,.14)";X.lineWidth=1.5;
+for(var r=0;r<7;r++){X.beginPath();for(var x=0;x<=W;x+=12){var y=wy+14+r*36+Math.sin(x/50+t*1.2+r)*4;x?X.lineTo(x,y):X.moveTo(x,y)}X.stroke()}
+if(L>0){X.fillStyle="rgba(255,225,150,"+.12*L+")";X.fillRect(0,wy,W,3)}
+if(Land>0){var dy=(1-Land)*180;X.fillStyle="#010204";X.beginPath();X.moveTo(260,H+10);for(var x=260;x<=W;x+=10)X.lineTo(x,gy(x)+dy);X.lineTo(W,H+10);X.fill();
+[[540,1],[610,1.3],[700,.9],[800,1.2],[440,.7]].forEach(function(q,i){var sc=sm(.15+i*.1,1,Land)*q[1],bx=q[0],by=gy(bx)+dy+4;if(sc<=0)return;X.fillRect(bx-2*sc,by-30*sc,4*sc,30*sc);X.beginPath();X.ellipse(bx,by-42*sc,17*sc,20*sc,0,0,7);X.fill()})}
+if(Br>0){X.strokeStyle="#000";X.lineWidth=3;for(var b=0;b<5;b++){var bx=((t*40+b*190)%1100)-80,by=120+b*28+Math.sin(t*3+b)*6,f=Math.sin(t*7+b)*7;X.globalAlpha=Br;X.beginPath();X.moveTo(bx-14,by-f);X.quadraticCurveTo(bx-6,by-6,bx,by);X.quadraticCurveTo(bx+6,by-6,bx+14,by-f);X.stroke()}X.globalAlpha=1;
+X.fillStyle="#000";for(var q=0;q<3;q++){var ph=((t*.6+q*.37)%1),fx=90+q*70+ph*60,fy=wy+10-Math.sin(ph*Math.PI)*70*Br;if(ph<.7){X.beginPath();X.ellipse(fx,fy,11,5,-.6+ph*1.6,0,7);X.fill()}}}
+if(An>0){X.fillStyle="#000";X.strokeStyle="#000";X.lineWidth=3;[[500,1],[590,.8],[760,1.1]].forEach(function(a,i){var x=a[0],s2=a[1]*An,y=gy(x)+4,w=Math.sin(t*3+i)*2;if(An<.05)return;X.beginPath();X.ellipse(x,y-16*s2,20*s2,10*s2,0,0,7);X.fill();X.beginPath();X.ellipse(x+22*s2,y-24*s2,7*s2,5*s2,.4,0,7);X.fill();[-12,-6,8,14].forEach(function(o){X.beginPath();X.moveTo(x+o*s2,y-10*s2);X.lineTo(x+(o+w)*s2,y);X.stroke()})});
+var mx=650,my=gy(mx)+4,m=sm(.3,1,An);X.globalAlpha=m;X.lineWidth=5;X.lineCap="round";X.beginPath();X.arc(mx,my-62,8,0,7);X.fill();X.fillRect(mx-6,my-52,12,32);X.beginPath();X.moveTo(mx-4,my-20);X.lineTo(mx-5,my);X.moveTo(mx+4,my-20);X.lineTo(mx+5,my);X.moveTo(mx,my-46);X.lineTo(mx-16,my-72);X.moveTo(mx,my-46);X.lineTo(mx+16,my-72);X.stroke();X.globalAlpha=1}
+var vg=X.createRadialGradient(W/2,H/2,H*.4,W/2,H/2,H*.95);vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.65)");X.fillStyle=vg;X.fillRect(0,0,W,H);
+return}
+function title(txt,ref,a){X.save();X.globalAlpha=a;X.textAlign="center";X.fillStyle="#ebe2cc";X.font="italic 30px Georgia,serif";X.shadowColor="#000";X.shadowBlur=12;X.fillText(txt,W/2,H-58);X.font="16px Georgia,serif";X.fillStyle="#dcab4f";X.fillText(ref,W/2,H-30);X.restore()}
+
+
+var ci=0,si=0,play=false,t0=0,est=10,spoke=false,tok=0,note="",T0=performance.now();
+function S(){return STORIES[ci]}
+function stg(){var k=S().scenes[si].k;return k==null?si:k}
+function ss(i){return mem.st[i]||(mem.st[i]={plays:0,done:0,last:0})}
+function fmt(ts){return new Date(ts).toLocaleString([],{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}
+function badge(i){var s=mem.st[i];return!s||!s.plays?["New",""]:s.done?["Completed","done"]:["In progress","prog"]}
+function log(m){mem.log.unshift({t:Date.now(),m:m});mem.log=mem.log.slice(0,40);save();renderLog()}
+function renderLog(){var u=$("log");u.innerHTML="";if(!mem.log.length){var e=document.createElement("li");e.textContent="Nothing yet. Press play to begin.";u.appendChild(e)}
+mem.log.forEach(function(x){var li=document.createElement("li"),sp=document.createElement("span");sp.textContent=fmt(x.t);li.textContent=x.m;li.appendChild(sp);u.appendChild(li)})}
+function refreshStat(){var s=S(),n=s.scenes.length,d=$("dot"),t;
+if(play){d.className="dot on";t="Playing: "+s.ref+", scene "+(si+1)+" of "+n+", "+s.scenes[si].h}
+else{d.className="dot"+(note?" warn":"");t=note||"Ready: "+s.ref+", scene "+(si+1)+" of "+n}
+$("stat").textContent=t}
+function ensureAI(){var s=$("voice");if(s.querySelector('[value^="ai:"]'))return;[["ai:bm_george","Deep old man (AI): George, British"],["ai:am_adam","Deep old man (AI): Adam, American"]].reverse().forEach(function(x){var q=document.createElement("option");q.value=x[0];q.textContent=x[1];s.insertBefore(q,s.firstChild)});if(!userChose)s.value="ai:bm_george"}
+function voiceStat(){ensureAI();var s=$("voice");s.style.display="";
+if(engine()==="ai")$("vstat").textContent=tts?"Narrator: deep old man (AI voice), ready. Works offline once downloaded.":"Narrator: deep old man (AI voice). The first play downloads about 90 MB, once.";
+else{var ok=window.speechSynthesis&&voices.length,v=ok&&voices[+s.value];$("vstat").textContent=ok?"Narrator: "+(v?v.name:"device voice")+". Device voices often sound higher than the AI voice.":"No device voice found. Choose the AI voice."}}
+if(window.speechSynthesis){var ov=speechSynthesis.onvoiceschanged;speechSynthesis.onvoiceschanged=function(){ov&&ov();voiceStat()}}
+function frame(){var now=performance.now(),t=(now-T0)/1000,el=wait?0:(now-t0)/1000,p;
+if(play){p=Math.min(1,el/(est*.7));$("sl").value=Math.round(p*100);if(!spoke&&el>est*1.4)advance()}else p=$("sl").value/100;
+X.setTransform(C.width/W,0,0,C.width/W,0,0);draw(stg(),p,t);
+if(rec)subs(S().scenes[si],el/est);else title(S().scenes[si].h,S().ref,play?Math.min(1,el/1.2):1);requestAnimationFrame(frame)}
+function speak(txt,cb){
+if(!window.speechSynthesis||!voices.length){spoke=false;return}
+speechSynthesis.cancel();var my=++tok,u=new SpeechSynthesisUtterance(txt),v=voices[+$("voice").value];
+if(v)u.voice=v;u.lang=(v&&v.lang)||"en-US";u.pitch=.45;u.rate=+$("rate").value;u.volume=1;
+u.onstart=function(){if(my===tok)spoke=true};
+u.onend=function(){if(play&&my===tok)setTimeout(function(){if(play&&my===tok)cb()},500)};
+u.onerror=function(){if(my===tok)spoke=false};
+setTimeout(function(){if(my===tok)speechSynthesis.speak(u)},60)}
+function setScene(i){si=i;var sc=S().scenes[i];t0=performance.now();spoke=false;est=sc.t.split(/\s+/).length*.5+1.5;
+$("cap").textContent=sc.t;if(!play)$("sl").value=100;
+document.querySelectorAll(".chip").forEach(function(c,j){c.classList.toggle("on",j===i)});refreshStat()}
+function speakScene(){if(engine()==="ai")aiScene(si);else speak(S().scenes[si].t,advance)}
+function advance(){if(si+1<S().scenes.length){setScene(si+1);speakScene()}else{var s=ss(ci);s.done++;save();log("Finished "+S().ref+": "+S().title);stop("Finished "+S().ref+". Replay it or generate the next story.");lib();info()}}
+function stop(n){play=false;tok++;note=n||"";if(window.speechSynthesis)speechSynthesis.cancel();killAI();$("play").textContent="Play story";$("sl").value=100;refreshStat()}
+function jump(i){if(rec||i<0||i>=S().scenes.length)return;tok++;if(window.speechSynthesis)speechSynthesis.cancel();killAI();note="";setScene(i);if(play)speakScene()}
+function info(){var s=S(),st=mem.st[ci]||{},w=0,sec=0;s.scenes.forEach(function(c){var n=c.t.split(/\s+/).length;w+=n;sec+=n*.5+1.5});
+$("info").innerHTML="<dl><dt>Reference</dt><dd>"+s.ref+"</dd><dt>Status</dt><dd>"+badge(ci)[0]+"</dd><dt>Scenes</dt><dd>"+s.scenes.length+"</dd><dt>Length</dt><dd>About "+Math.max(1,Math.round(sec/60))+" min</dd><dt>Words</dt><dd>"+w+"</dd><dt>Times played</dt><dd>"+(st.plays||0)+"</dd><dt>Times finished</dt><dd>"+(st.done||0)+"</dd><dt>Last played</dt><dd>"+(st.last?fmt(st.last):"Never")+"</dd></dl>"}
+function pick(i){if(rec)return;stop();ci=i;var s=S(),ch=$("chips"),ft=$("ft");ch.innerHTML="";ft.innerHTML="";
+s.scenes.forEach(function(sc,j){var b=document.createElement("button");b.className="chip";b.textContent=j+1;b.setAttribute("aria-label","Scene "+(j+1)+": "+sc.h);b.onclick=function(){jump(j)};ch.appendChild(b);
+var p=document.createElement("p"),h=document.createElement("b");h.textContent=sc.h;p.appendChild(h);p.appendChild(document.createElement("br"));p.appendChild(document.createTextNode(sc.t));ft.appendChild(p)});
+setScene(0);lib();info();fbUpdate()}
+function lib(){var L=$("lib");L.innerHTML="";STORIES.slice(0,mem.gen).forEach(function(s,i){var b=document.createElement("button"),a=document.createElement("span"),g=document.createElement("span"),bd=badge(i);
+b.className="row"+(i===ci?" on":"");a.textContent=s.ref+": "+s.title;g.className="bd "+bd[1];g.textContent=bd[0];b.appendChild(a);b.appendChild(g);b.onclick=function(){pick(i)};L.appendChild(b)});
+var n=STORIES[mem.gen];$("gen").disabled=!n;$("gen").textContent=n?"Generate next story":"No more stories yet";
+$("note").textContent=n?"Next in order: "+n.ref+". Press as often as you like.":"Every story written so far is generated. More can be added on request.";
+$("sumtxt").textContent=mem.gen+" of "+STORIES.length+" written stories generated. Bible chapters covered: "+mem.gen+" of 1,189.";$("sumbar").style.width=(mem.gen/1189*100+1)+"%"}
+$("gen").onclick=function(){if(mem.gen<STORIES.length){mem.gen++;save();log("Generated "+STORIES[mem.gen-1].ref+": "+STORIES[mem.gen-1].title);pick(mem.gen-1);window.scrollTo({top:0})}};
+function toggle(){if(rec)return;if(play){stop("Paused at scene "+(si+1)+" of "+S().scenes.length);log("Paused "+S().ref+" at scene "+(si+1));return}
+play=true;note="";var s=ss(ci);s.plays++;s.last=Date.now();save();log("Started "+S().ref+(si?" from scene "+(si+1):""));$("play").textContent="Pause";setScene(si);speakScene();lib();info()}
+$("play").onclick=toggle;$("prev").onclick=function(){jump(si-1)};$("nx").onclick=function(){jump(si+1)};
+$("sl").oninput=function(){if(rec)return;if(play)stop();note="Previewing the animation";refreshStat()};
+$("voice").onchange=function(){userChose=true;if(play)stop("Narrator changed. Press play to continue.");voiceStat();log("Narrator changed to "+$("voice").options[$("voice").selectedIndex].text)};
+$("rate").onchange=function(){log("Narration speed changed")};
+$("clr").onclick=function(){mem.log=[];save();renderLog()};
+document.addEventListener("keydown",function(e){var t=e.target.tagName;if(t==="SELECT"||t==="INPUT"||t==="BUTTON"||t==="SUMMARY")return;
+if(e.key===" "){e.preventDefault();toggle()}else if(e.key==="ArrowRight")jump(si+1);else if(e.key==="ArrowLeft")jump(si-1)});
+
+var curSrc=null,wait=false,rec=false,AC,dest,chain,tts=null,ttsP=null,cache={},RATE=.86,userChose=false;
+function aiVoice(){var v=$("voice").value;return v.indexOf("ai:")===0?v.slice(3):"bm_george"}
+function engine(){return $("voice").value.indexOf("ai:")===0?"ai":"dev"}
+function killAI(){wait=false;if(curSrc){try{curSrc.onended=null;curSrc.stop()}catch(e){}curSrc=null}}
+function actx(){if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();dest=AC.createMediaStreamDestination();chain=AC.createGain();var sh=AC.createBiquadFilter();sh.type="lowshelf";sh.frequency.value=220;sh.gain.value=6;var lp=AC.createBiquadFilter();lp.type="lowpass";lp.frequency.value=4200;chain.connect(sh);sh.connect(lp);lp.connect(AC.destination);lp.connect(dest)}if(AC.state==="suspended")AC.resume();return AC}
+function fallbackDev(m){var o=[].slice.call($("voice").options).filter(function(x){return x.value.indexOf("ai:")!==0})[0];if(o)$("voice").value=o.value;if(play&&!rec)stop(m);$("vstat").textContent=m+(o?" Using the device voice.":" Stories will play silently.")}
+function loadAI(){if(ttsP)return ttsP;if(window.__FAKE){tts={};return ttsP=Promise.resolve(tts)}
+$("vstat").textContent="Downloading the deep voice, one time, about 90 MB. Please wait.";
+ttsP=import("https://cdn.jsdelivr.net/npm/kokoro-js@1.2.0/+esm").then(function(m){return m.KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX",{dtype:"q8",device:"wasm",progress_callback:function(p){if(p&&p.status==="progress")$("vstat").textContent="Downloading the deep voice: "+Math.round(p.progress)+"%"}})}).then(function(t){tts=t;voiceStat();return t});
+ttsP.catch(function(){ttsP=null;fallbackDev("The deep AI voice could not load. It needs an internet connection the first time.")});return ttsP}
+function aiBuf(i){var k=ci+":"+i+":"+aiVoice();if(cache[k])return Promise.resolve(cache[k]);
+return loadAI().then(function(t){if(window.__FAKE){var b=actx().createBuffer(1,36000,24000),d=b.getChannelData(0);for(var j=0;j<d.length;j++)d[j]=.2*Math.sin(j/20);return b}
+return t.generate(S().scenes[i].t,{voice:aiVoice(),speed:.92}).then(function(a){var b=actx().createBuffer(1,a.audio.length,a.sampling_rate);b.copyToChannel(a.audio,0);return b})}).then(function(b){cache[k]=b;return b})}
+function playBuf(b,cb){var s=actx().createBufferSource();s.buffer=b;s.playbackRate.value=RATE;s.connect(chain);s.onended=cb;curSrc=s;s.start();return b.duration/RATE}
+function aiScene(i){actx();var my=++tok;spoke=true;wait=true;$("vstat").textContent="Preparing narration for scene "+(i+1)+"...";
+aiBuf(i).then(function(b){if(my!==tok||!play)return;voiceStat();wait=false;t0=performance.now();est=playBuf(b,function(){if(play&&my===tok)setTimeout(function(){if(play&&my===tok)advance()},500)});if(i+1<S().scenes.length)aiBuf(i+1).catch(function(){})}).catch(function(){})}
+function subs(sc,f){X.save();X.textAlign="center";X.fillStyle="#ebe2cc";X.font="italic 28px Georgia,serif";X.shadowColor="#000";X.shadowBlur=10;X.globalAlpha=Math.min(1,Math.max(0,f*est));X.fillText(sc.h,W/2,48);X.globalAlpha=1;
+var ss=sc.t.match(/[^.!?]+[.!?]*/g)||[sc.t],tot=sc.t.length,c=0,cur=ss[ss.length-1];
+for(var i=0;i<ss.length;i++){c+=ss[i].length;if(f<=c/tot){cur=ss[i];break}}
+X.font="26px Georgia,serif";X.shadowBlur=0;var ws=cur.trim().split(/\s+/),lines=[],ln="";
+ws.forEach(function(w){var tt=ln?ln+" "+w:w;if(X.measureText(tt).width>840&&ln){lines.push(ln);ln=w}else ln=tt});lines.push(ln);
+var h=lines.length*34+24,y0=H-h-16;X.fillStyle="rgba(0,0,0,.62)";X.fillRect(40,y0,W-80,h);X.fillStyle="#fff";
+lines.forEach(function(l,k){X.fillText(l,W/2,y0+34+k*34-6)});X.restore()}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+function pickMime(){var l=["video/mp4;codecs=avc1.42E01E,mp4a.40.2","video/mp4","video/webm;codecs=vp9,opus","video/webm"];for(var i=0;i<l.length;i++)if(window.MediaRecorder&&MediaRecorder.isTypeSupported(l[i]))return l[i];return""}
+function mkMsg(m){$("mkst").textContent=m}
+async function makeVideo(){
+if(rec)return;if(!window.MediaRecorder||!C.captureStream){mkMsg("This browser cannot record video. Use Chrome on a PC or Android.");return}
+stop();rec=true;$("mk").disabled=true;$("dlbox").hidden=true;var s=S(),n=s.scenes.length,mime=pickMime(),mr;
+try{await loadAI();var bs=[];for(var i=0;i<n;i++){mkMsg("Preparing narration "+(i+1)+" of "+n+"...");bs.push(await aiBuf(i));$("mkbar").style.width=((i+1)/n*50)+"%"}
+var ac=actx();await ac.resume();setScene(0);
+var st2=new MediaStream(C.captureStream(30).getVideoTracks().concat(dest.stream.getAudioTracks())),ch=[];
+mr=new MediaRecorder(st2,mime?{mimeType:mime,videoBitsPerSecond:5e6,audioBitsPerSecond:128e3}:{});
+mr.ondataavailable=function(e){if(e.data.size)ch.push(e.data)};var fin=new Promise(function(r){mr.onstop=r});
+play=true;spoke=true;mr.start(500);await sleep(600);
+for(var j=0;j<n;j++){setScene(j);est=bs[j].duration/RATE;t0=performance.now();mkMsg("Recording scene "+(j+1)+" of "+n+". Keep this tab open.");$("mkbar").style.width=(50+(j/n)*50)+"%";
+await new Promise(function(r){playBuf(bs[j],r)});await sleep(900)}
+await sleep(1200);mr.stop();await fin;play=false;
+var blob=new Blob(ch,{type:(mr.mimeType||mime||"video/webm").split(";")[0]}),ext=blob.type.indexOf("mp4")>=0?"mp4":"webm",u=URL.createObjectURL(blob),nm=(s.ref+" "+s.title).replace(/[^A-Za-z0-9]+/g,"-")+"."+ext;
+$("dl").href=u;$("dl").download=nm;$("pv").src=u;$("dlbox").hidden=false;$("mkbar").style.width="100%";
+mkMsg(ext==="mp4"?"Done. Your MP4 is ready.":"Done, but this browser made a WebM file, not MP4. Use Chrome on a PC or Android for MP4, or convert it free at cloudconvert.com.");
+log("Made video: "+nm+" ("+Math.round(blob.size/1e5)/10+" MB)")
+}catch(e){mkMsg("Could not make the video: "+(e&&e.message||e));try{mr&&mr.state!=="inactive"&&mr.stop()}catch(x){}}
+rec=false;play=false;killAI();$("mk").disabled=false;$("sl").value=100;refreshStat()}
+$("mk").onclick=makeVideo;
+function fbUpdate(){var s=S(),bk=s.ref.replace(/\s*\d+$/,"").replace(/\s/g,""),hook=(s.scenes[0].t.match(/[^.!?]+[.!?]/)||[""])[0].trim();
+$("fbcap").value=s.title+" ("+s.ref+")\n\n"+hook+"\n\nOne Bible story a day, from Genesis to Revelation. Share it with someone who needs to hear it today.\n\n#BibleStories #"+bk+" #OneStoryADay #Faith #Scripture"}
+$("cpy").onclick=function(){var t=$("fbcap"),ok=function(){$("cpst").textContent="Copied. Paste it into your Facebook post."};
+if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t.value).then(ok,function(){t.select();document.execCommand("copy");ok()});else{t.select();document.execCommand("copy");ok()}};
+pick(0);renderLog();voiceStat();frame();
+
+var dp=null,standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+addEventListener("beforeinstallprompt",function(e){e.preventDefault();dp=e;if(!standalone)$("inst").hidden=false});
+$("inst").onclick=function(){if(dp){dp.prompt();dp.userChoice.then(function(){dp=null;$("inst").hidden=true})}};
+addEventListener("appinstalled",function(){$("inst").hidden=true;log("App installed")});
+if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!standalone)$("ios").hidden=false;
+if("serviceWorker" in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+</script></body></html>
